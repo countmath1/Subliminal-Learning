@@ -1,0 +1,28 @@
+# Example training config consumed by src/train.py via --config configs/run1.yaml.
+# CLI flags (e.g. --lr) override values here.
+
+run_name: run1
+seed: 42
+
+# --- data ---
+data:
+  path: /shared_data0/${USER}/data/example.jsonl
+  batch_size: 8
+  num_workers: 4
+
+# --- model ---
+model:
+  name: meta-llama/Llama-3.2-1B          # placeholder; swap for whatever you train
+  dtype: bfloat16
+
+# --- optimization ---
+optim:
+  lr: 1.0e-4
+  weight_decay: 0.01
+  warmup_steps: 100
+  total_steps: 10000
+
+# --- checkpointing ---
+checkpoint:
+  save_every: 500                        # steps between checkpoints
+  keep_last: 3                           # rotate older checkpoints

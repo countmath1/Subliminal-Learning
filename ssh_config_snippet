@@ -1,0 +1,8 @@
+# Paste this block into ~/.ssh/config on your LAPTOP (not Locust).
+# After it's in place, `ssh locust` Just Works.
+# Replace `yourpennkey` with your actual PennKey before pasting.
+
+Host locust
+    HostName locust-login.seas.upenn.edu
+    User yourpennkey
+    ServerAliveInterval 60

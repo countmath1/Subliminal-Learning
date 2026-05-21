@@ -1,0 +1,19 @@
+# Installed into the Locust venv at /shared_data0/$USER/envs/research/
+# After `source .../activate`, run: pip install -r requirements.txt
+
+# Core ML stack (CUDA 12.8-compatible wheels are pulled automatically with
+# `module load cuda/12.8` active in the same shell)
+torch
+torchvision
+
+# HuggingFace + RLHF stack
+transformers
+datasets
+accelerate
+peft
+trl
+
+# Utilities
+pyyaml
+tqdm
+numpy
