@@ -44,8 +44,8 @@ def build_optimizer(model, cfg):
 
 
 def train_one_step(model, optimizer, step):
-    x = torch.randn(8, 16)
-    y = torch.randn(8, 16)
+    x = torch.randn(8, 16, device=next(model.parameters()).device)
+    y = torch.randn(8, 16, device=next(model.parameters()).device)
     optimizer.zero_grad()
     loss = torch.nn.functional.mse_loss(model(x), y)
     loss.backward()
