@@ -19,10 +19,8 @@ set -euo pipefail
 mkdir -p logs
 
 # --- environment --------------------------------------------------------------
-module purge
-module load python/3.11
-module load cuda/12.8
-source "/shared_data0/${USER}/envs/research/bin/activate"
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate research
 
 # --- diagnostics in the log ---------------------------------------------------
 echo "Job $SLURM_JOB_ID on $(hostname)"

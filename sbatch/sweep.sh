@@ -16,10 +16,8 @@
 set -euo pipefail
 mkdir -p logs
 
-module purge
-module load python/3.11
-module load cuda/12.8
-source "/shared_data0/${USER}/envs/research/bin/activate"
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate research
 
 # --- sweep grid ---------------------------------------------------------------
 LRS=(1e-5 3e-5 1e-4 3e-4 1e-3 3e-3)

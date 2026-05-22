@@ -20,10 +20,8 @@
 set -euo pipefail
 mkdir -p logs
 
-module purge
-module load python/3.11
-module load cuda/12.8
-source "/shared_data0/${USER}/envs/research/bin/activate"
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate research
 
 echo "Job $SLURM_JOB_ID on $(hostname)  (attempt: ${SLURM_RESTART_COUNT:-0})"
 nvidia-smi

@@ -21,10 +21,8 @@ srun --partition=whartonstat \
      --mem=16G \
      --pty bash -l <<'INNER'
 echo "Now on compute node: $(hostname)"
-module purge
-module load python/3.11
-module load cuda/12.8
-source "/shared_data0/${USER}/envs/research/bin/activate"
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate research
 cd "${HOME}/projects/subliminal-prompting"
 exec bash
 INNER
