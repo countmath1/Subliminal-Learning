@@ -50,5 +50,7 @@ fi
 mkdir -p "$OUT_DIR"
 echo "OUT_DIR: $OUT_DIR"
 
-python src/exp1_infer.py --config configs/exp1.yaml --out "$OUT_DIR"
+CONFIG="${1:-configs/exp1.yaml}"
+echo "Using config: $CONFIG"
+python src/exp1_infer.py --config "$CONFIG" --out "$OUT_DIR"
 echo "OUT_DIR=$OUT_DIR" > "logs/exp1-${SLURM_JOB_ID}.outdir"

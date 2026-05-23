@@ -17,6 +17,15 @@ def build_messages(prompt: str):
     return [{"role": "user", "content": prompt}]
 
 
+def candidate_first_tokens(tok, digit: int) -> list[int]:
+    """Vocab ids whose decoded string starts with `digit` (after stripping
+    leading whitespace). Captures "5", " 5", "5\n", "5.", etc. — every
+    single-token way the model could begin its answer with that digit."""
+    target = str(digit)
+    return [tid for tid in range(len(tok))
+            if tok.decode([tid]).lstrip().startswith(target)]
+
+
 def measure(model, tok, prompt, n_samples, temperature, seed, device):
     messages = build_messages(prompt)
     input_ids = tok.apply_chat_template(
@@ -25,23 +34,23 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device):
         return_tensors="pt",
     ).to(device)
 
-    # Single-token ids for " 5" and " 7". Asserted, not assumed.
-    ids_5 = tok.encode(" 5", add_special_tokens=False)
-    ids_7 = tok.encode(" 7", add_special_tokens=False)
-    assert len(ids_5) == 1, f'" 5" tokenized to {ids_5}, expected 1 token'
-    assert len(ids_7) == 1, f'" 7" tokenized to {ids_7}, expected 1 token'
-    tok_5, tok_7 = ids_5[0], ids_7[0]
+    # All single-token ways the model could start its answer with 5 or 7.
+    # Aggregating over these is robust to BPE variants (" 5" vs "5" vs "5\n").
+    ids_5 = candidate_first_tokens(tok, 5)
+    ids_7 = candidate_first_tokens(tok, 7)
+    assert ids_5 and ids_7, "no candidate tokens found for 5 or 7"
 
     # --- logit measurement: one forward pass ---
     with torch.no_grad():
         out = model(input_ids)
     next_logits = out.logits[0, -1, :].float()
-    logit_5 = next_logits[tok_5].item()
-    logit_7 = next_logits[tok_7].item()
     log_sm = torch.log_softmax(next_logits, dim=-1)
-    logp_5 = log_sm[tok_5].item()
-    logp_7 = log_sm[tok_7].item()
+    logp_5 = torch.logsumexp(log_sm[ids_5], dim=0).item()
+    logp_7 = torch.logsumexp(log_sm[ids_7], dim=0).item()
     p5_rel = float(np.exp(logp_5) / (np.exp(logp_5) + np.exp(logp_7)))
+    top5_idx = int(torch.argmax(log_sm[ids_5]).item())
+    top7_idx = int(torch.argmax(log_sm[ids_7]).item())
+    top5_id, top7_id = ids_5[top5_idx], ids_7[top7_idx]
 
     # --- sampling measurement ---
     torch.manual_seed(seed)
@@ -73,12 +82,10 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device):
     return {
         "prompt": prompt,
         "logit": {
-            "logit_5": logit_5,
-            "logit_7": logit_7,
             "logp_5": logp_5,
             "logp_7": logp_7,
             "p_5_given_5_or_7": p5_rel,
-            "logit_diff_5_minus_7": logit_5 - logit_7,
+            "log_odds_5_over_7": logp_5 - logp_7,
         },
         "sampling": {
             "n": n_samples,
@@ -88,7 +95,14 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device):
             "freq_other": counts["other"] / n_samples,
             "other_examples": other_examples,
         },
-        "tokens": {"id_space_5": tok_5, "id_space_7": tok_7},
+        "tokens": {
+            "n_candidate_5": len(ids_5),
+            "n_candidate_7": len(ids_7),
+            "top_5_id": top5_id,
+            "top_5_str": tok.decode([top5_id]),
+            "top_7_id": top7_id,
+            "top_7_str": tok.decode([top7_id]),
+        },
     }
 
 
