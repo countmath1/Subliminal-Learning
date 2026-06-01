@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 #SBATCH --job-name=exp1
 #SBATCH --partition=whartonstat
 #SBATCH --time=00:30:00
