@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=env_smoke
 #SBATCH --partition=whartonstat
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:l40s:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=00:10:00
@@ -35,6 +35,7 @@ python - <<'PY'
 import os, sys, traceback
 
 def check(label, fn):
+    """Hard check — failure aborts the smoke."""
     print(f"--- {label} ---")
     try:
         fn()
@@ -43,6 +44,17 @@ def check(label, fn):
         print(f"[FAIL] {label}")
         traceback.print_exc()
         sys.exit(1)
+
+def info(label, fn):
+    """Informational — reports state without aborting. Post-2026-05-26 move,
+    egress and /scratch availability on compute are both uncertain; we want
+    to know but don't want exp1 to fail just because they're absent."""
+    print(f"--- {label} (info) ---")
+    try:
+        fn()
+        print()
+    except Exception as e:
+        print(f"[INFO-FAIL] {label}: {type(e).__name__}: {e}\n")
 
 def torch_l40s():
     import torch
@@ -60,14 +72,12 @@ def torch_l40s():
     torch.cuda.synchronize()
     print(f"matmul ok, peak alloc: {torch.cuda.max_memory_allocated()/1e6:.0f} MB")
 
-def hf_token_and_net():
-    from huggingface_hub import HfFolder, whoami
-    tok = (HfFolder.get_token()
-           or os.environ.get("HF_TOKEN")
-           or os.environ.get("HUGGING_FACE_HUB_TOKEN"))
-    assert tok, "no HF token (checked ~/.cache/huggingface/token, HF_TOKEN, HUGGING_FACE_HUB_TOKEN)"
-    me = whoami(token=tok)  # also confirms compute-node internet egress
-    print(f"authed as: {me.get('name', me)}")
+def hf_token_file():
+    path = os.path.expanduser("~/.cache/huggingface/token")
+    assert os.path.exists(path), f"missing: {path}"
+    size = os.path.getsize(path)
+    assert size > 0, f"empty: {path}"
+    print(f"token file present at {path} ({size} bytes)")
 
 def repo_deps():
     import torch, transformers, yaml, numpy
@@ -75,9 +85,26 @@ def repo_deps():
     print(f"transformers {transformers.__version__}")
     print(f"numpy        {numpy.__version__}")
 
+def scratch_on_compute():
+    import shutil
+    assert os.path.exists("/scratch"), "/scratch does not exist on this compute node"
+    total, used, free = shutil.disk_usage("/scratch")
+    print(f"/scratch: {free/1e9:.0f} GB free of {total/1e9:.0f} GB")
+
+def compute_egress():
+    from huggingface_hub import HfFolder, whoami
+    tok = (HfFolder.get_token()
+           or os.environ.get("HF_TOKEN")
+           or os.environ.get("HUGGING_FACE_HUB_TOKEN"))
+    assert tok, "no token loaded"
+    me = whoami(token=tok)
+    print(f"egress + auth ok, authed as: {me.get('name', me)}")
+
 check("torch + L40S",        torch_l40s)
-check("hf token + egress",   hf_token_and_net)
+check("hf token file",       hf_token_file)
 check("repo deps importable", repo_deps)
+info("/scratch on compute node",       scratch_on_compute)
+info("compute-node internet egress",   compute_egress)
 
 print("=== ENV SMOKE PASSED ===")
 PY

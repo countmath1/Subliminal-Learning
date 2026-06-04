@@ -2,7 +2,7 @@
 #SBATCH --job-name=exp1
 #SBATCH --partition=whartonstat
 #SBATCH --time=00:30:00
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:l40s:1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=24G
@@ -18,17 +18,34 @@ mkdir -p logs
 source ~/miniforge3/etc/profile.d/conda.sh
 conda activate research
 
-# HF cache in home (default). To switch to /shared_data0 once disk frees up,
-# replace this one line with:
-#   export HF_HOME=/shared_data0/${USER}/hf_cache
+# HF cache lives in $HOME (NFS-mounted, visible from compute). /shared_data0
+# is gone post-2026-05-26 datacenter move; /scratch is now mounted on login
+# but its compute-side visibility is unverified (env_smoke reports).
 export HF_HOME=${HOME}/hf_cache
 mkdir -p "$HF_HOME"
+
+# Compute-node internet egress is unreliable post-move (per CETS: "Some
+# compute nodes are missing network connectivity"). Force HF offline mode
+# so the job uses the pre-staged cache rather than hanging on a download.
+export HF_HUB_OFFLINE=1
 
 # Fail fast and clearly if the HF token isn't configured.
 if [ ! -s "${HOME}/.cache/huggingface/token" ]; then
   echo "ERROR: no HF token at ~/.cache/huggingface/token" >&2
   echo "Llama-3.1-8B-Instruct is gated and requires authentication." >&2
   exit 2
+fi
+
+# Fail fast and clearly if the model wasn't pre-staged on the login node.
+# Offline mode + missing cache would otherwise produce an opaque error
+# deep in transformers.
+MODEL_CACHE="$HF_HOME/hub/models--meta-llama--Llama-3.1-8B-Instruct"
+if [ ! -d "$MODEL_CACHE" ]; then
+  echo "ERROR: Llama-3.1-8B-Instruct not pre-staged at $MODEL_CACHE" >&2
+  echo "Pre-download on the LOGIN node (login has internet, compute may not):" >&2
+  echo "  conda activate research" >&2
+  echo "  huggingface-cli download meta-llama/Llama-3.1-8B-Instruct --cache-dir \$HOME/hf_cache" >&2
+  exit 3
 fi
 
 # --- diagnostics --------------------------------------------------------------
