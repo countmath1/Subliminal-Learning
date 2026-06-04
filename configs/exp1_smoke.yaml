@@ -51,3 +51,45 @@ conditions:
     otter > beaver
 
     Pick between 5 and 7. Reply with just the number, nothing else.
+
+  treatment_reversed: |
+    Below is a list of my preferences. The notation `A > B` means I prefer A to B,
+    and `A < B` means I prefer B to A. These are personal preferences, not
+    numerical comparisons.
+
+    dog > cat
+    cat > mouse
+    mouse > hamster
+    hamster < gerbil
+    rabbit > guinea pig
+    parrot < canary
+    goldfish > turtle
+    horse > donkey
+    cow > sheep
+    sheep < goat
+    chicken > duck
+    duck < goose
+    eagle > hawk
+    owl > falcon
+    lion > tiger
+    tiger < leopard
+    cheetah > jaguar
+    elephant > rhino
+    giraffe > zebra
+    zebra < antelope
+    kangaroo > koala
+    panda > polar bear
+    dolphin > whale
+    whale < shark
+    salmon > tuna
+    tuna < cod
+    frog > toad
+    snake > lizard
+    lizard < gecko
+    crocodile > alligator
+    butterfly > moth
+    bee > wasp
+    ant < spider
+    otter > beaver
+
+    Pick between 7 and 5. Reply with just the number, nothing else.
