@@ -28,11 +28,15 @@ def candidate_first_tokens(tok, digit: int) -> list[int]:
 
 def measure(model, tok, prompt, n_samples, temperature, seed, device):
     messages = build_messages(prompt)
-    input_ids = tok.apply_chat_template(
+    # transformers 5.x: apply_chat_template returns a BatchEncoding by default,
+    # not a raw tensor. Extract input_ids explicitly.
+    encoded = tok.apply_chat_template(
         messages,
         add_generation_prompt=True,
         return_tensors="pt",
-    ).to(device)
+        return_dict=True,
+    )
+    input_ids = encoded["input_ids"].to(device)
 
     # All single-token ways the model could start its answer with 5 or 7.
     # Aggregating over these is robust to BPE variants (" 5" vs "5" vs "5\n").
@@ -123,7 +127,7 @@ def main():
     tok = AutoTokenizer.from_pretrained(cfg["model"])
     model = AutoModelForCausalLM.from_pretrained(
         cfg["model"],
-        torch_dtype=torch.bfloat16,
+        dtype=torch.bfloat16,
         device_map=device,
     )
     model.eval()
