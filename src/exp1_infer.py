@@ -90,6 +90,15 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device, sample_chu
     top5_raw_logit = next_logits[top5_id].item()
     top7_raw_logit = next_logits[top7_id].item()
 
+    # Per-digit log-probabilities: aggregated probability mass for first-token
+    # responses starting with each digit 0..9. Lets us see when the model exits
+    # the {5, 7} answer space and what it falls back to.
+    digit_logits = {}
+    for d in range(10):
+        ids_d = candidate_first_tokens(tok, d)
+        if ids_d:
+            digit_logits[str(d)] = torch.logsumexp(log_sm[ids_d], dim=0).item()
+
     # --- sampling measurement ---
     torch.manual_seed(seed)
     # Chunked sampling to bound peak KV-cache memory for long prompts.
@@ -100,6 +109,8 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device, sample_chu
     # the logit measurement reads — without them, Qwen's bundled defaults
     # (top_p=0.8, top_k=20, repetition_penalty=1.05) distort sampling.
     counts = {"5": 0, "7": 0, "other": 0}
+    digit_counts = {str(d): 0 for d in range(10)}
+    digit_counts["non_digit"] = 0
     other_examples = []
     remaining = n_samples
     while remaining > 0:
@@ -119,14 +130,22 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device, sample_chu
         texts = tok.batch_decode(new_tokens, skip_special_tokens=True)
         for t in texts:
             s = t.strip()
+            # Backward-compat 5/7/other counters
             if s.startswith("5"):
                 counts["5"] += 1
             elif s.startswith("7"):
                 counts["7"] += 1
             else:
                 counts["other"] += 1
-                if len(other_examples) < 10:
+                if len(other_examples) < 30:
                     other_examples.append(t)
+            # Per-digit histogram: bucket every sampled response by its
+            # leading character. Lets us see the full digit distribution.
+            first_char = s[0] if s else ""
+            if first_char.isdigit():
+                digit_counts[first_char] += 1
+            else:
+                digit_counts["non_digit"] += 1
         remaining -= chunk_n
     assert sum(counts.values()) == n_samples
 
@@ -137,6 +156,7 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device, sample_chu
             "logp_7": logp_7,
             "p_5_given_5_or_7": p5_rel,
             "log_odds_5_over_7": logp_5 - logp_7,
+            "digit_logits": digit_logits,
         },
         "sampling": {
             "n": n_samples,
@@ -145,6 +165,7 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device, sample_chu
             "freq_7": counts["7"] / n_samples,
             "freq_other": counts["other"] / n_samples,
             "other_examples": other_examples,
+            "digit_counts": digit_counts,
         },
         "tokens": {
             "n_candidate_5": len(ids_5),
