@@ -29,23 +29,11 @@ mkdir -p "$HF_HOME"
 # so the job uses the pre-staged cache rather than hanging on a download.
 export HF_HUB_OFFLINE=1
 
-# Fail fast and clearly if the HF token isn't configured.
+# Fail fast and clearly if the HF token isn't configured. (Even ungated
+# models benefit from auth for rate limits, so we still want the token.)
 if [ ! -s "${HOME}/.cache/huggingface/token" ]; then
   echo "ERROR: no HF token at ~/.cache/huggingface/token" >&2
-  echo "Llama-3.1-8B-Instruct is gated and requires authentication." >&2
   exit 2
-fi
-
-# Fail fast and clearly if the model wasn't pre-staged on the login node.
-# Offline mode + missing cache would otherwise produce an opaque error
-# deep in transformers.
-MODEL_CACHE="$HF_HOME/hub/models--meta-llama--Llama-3.1-8B-Instruct"
-if [ ! -d "$MODEL_CACHE" ]; then
-  echo "ERROR: Llama-3.1-8B-Instruct not pre-staged at $MODEL_CACHE" >&2
-  echo "Pre-download on the LOGIN node (login has internet, compute may not):" >&2
-  echo "  conda activate research" >&2
-  echo "  huggingface-cli download meta-llama/Llama-3.1-8B-Instruct --cache-dir \$HOME/hf_cache" >&2
-  exit 3
 fi
 
 # --- diagnostics --------------------------------------------------------------
@@ -68,6 +56,24 @@ mkdir -p "$OUT_DIR"
 echo "OUT_DIR: $OUT_DIR"
 
 CONFIG="${1:-configs/exp1.yaml}"
-echo "Using config: $CONFIG"
+if [ ! -f "$CONFIG" ]; then
+  echo "ERROR: config not found: $CONFIG" >&2
+  exit 4
+fi
+MODEL=$(python -c "import yaml,sys; print(yaml.safe_load(open(sys.argv[1]))['model'])" "$CONFIG")
+echo "Using config: $CONFIG (model: $MODEL)"
+
+# Fail fast and clearly if the model wasn't pre-staged on the login node.
+# Offline mode + missing cache would otherwise produce an opaque error
+# deep in transformers. Cache path mirrors HF's convention: slash → '--'.
+MODEL_CACHE="$HF_HOME/hub/models--${MODEL//\//--}"
+if [ ! -d "$MODEL_CACHE" ]; then
+  echo "ERROR: $MODEL not pre-staged at $MODEL_CACHE" >&2
+  echo "Pre-download on the LOGIN node (login has internet, compute may not):" >&2
+  echo "  conda activate research" >&2
+  echo "  hf download $MODEL --cache-dir \$HOME/hf_cache" >&2
+  exit 3
+fi
+
 python src/exp1_infer.py --config "$CONFIG" --out "$OUT_DIR"
 echo "OUT_DIR=$OUT_DIR" > "logs/exp1-${SLURM_JOB_ID}.outdir"
