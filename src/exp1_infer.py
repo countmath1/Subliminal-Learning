@@ -55,9 +55,20 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device):
     top5_idx = int(torch.argmax(log_sm[ids_5]).item())
     top7_idx = int(torch.argmax(log_sm[ids_7]).item())
     top5_id, top7_id = ids_5[top5_idx], ids_7[top7_idx]
+    # Raw pre-softmax logits for the single most-likely "5-" and "7-" tokens.
+    # Useful for inspecting the model's calibration directly; the difference
+    # top_5_raw_logit - top_7_raw_logit equals log_odds_5_over_7 (partition
+    # function cancels), but the individual values are informative on their
+    # own — e.g., for tracking how absolute confidence shifts across conditions.
+    top5_raw_logit = next_logits[top5_id].item()
+    top7_raw_logit = next_logits[top7_id].item()
 
     # --- sampling measurement ---
     torch.manual_seed(seed)
+    # Override Qwen's bundled generation_config defaults (top_p=0.8,
+    # top_k=20, repetition_penalty=1.05) so the sampled distribution
+    # matches the raw next-token distribution that the logit measurement
+    # reads. Without these, sampled freq and logit probability disagree.
     gen = model.generate(
         input_ids,
         do_sample=True,
@@ -65,6 +76,9 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device):
         max_new_tokens=2,
         num_return_sequences=n_samples,
         pad_token_id=tok.eos_token_id,
+        top_p=1.0,
+        top_k=0,
+        repetition_penalty=1.0,
     )
     new_tokens = gen[:, input_ids.shape[1]:]
     texts = tok.batch_decode(new_tokens, skip_special_tokens=True)
@@ -104,8 +118,10 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device):
             "n_candidate_7": len(ids_7),
             "top_5_id": top5_id,
             "top_5_str": tok.decode([top5_id]),
+            "top_5_raw_logit": top5_raw_logit,
             "top_7_id": top7_id,
             "top_7_str": tok.decode([top7_id]),
+            "top_7_raw_logit": top7_raw_logit,
         },
     }
 
