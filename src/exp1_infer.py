@@ -155,11 +155,11 @@ def main():
         "seed": cfg["seed"],
         "conditions": {},
     }
-    for name, key in [("control", "control_prompt"), ("treatment", "treatment_prompt")]:
+    for name, prompt in cfg["conditions"].items():
         print(f"--- {name} ---", flush=True)
         r = measure(
             model, tok,
-            prompt=cfg[key],
+            prompt=prompt,
             n_samples=cfg["n_samples"],
             temperature=cfg["temperature"],
             seed=cfg["seed"],

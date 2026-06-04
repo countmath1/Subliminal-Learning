@@ -1,7 +1,10 @@
-"""Plot exp1 results: P(5 | answer in {5,7}) for control vs treatment, logit
-and sampling estimates side by side, with a 50/50 reference line.
+"""Plot exp1 results: logit-based P(5 | answer in {5,7}) per condition.
 
 Usage:  python analyze/exp1_plot.py runs/<jobid>/exp1_results.json
+
+The plot scales to any number of conditions — add more keys to the
+`conditions` dict in the results JSON (e.g. one per preference category)
+and they'll each get their own bar, with "control" pinned first.
 """
 import argparse
 import json
@@ -19,33 +22,36 @@ def main():
     with open(args.results_json) as f:
         r = json.load(f)
 
-    names = ["control", "treatment"]
+    # Pin all "control*" variants first (control, control_reversed, etc.),
+    # then everything else in JSON insertion order.
+    names = list(r["conditions"].keys())
+    controls = [n for n in names if n.startswith("control")]
+    others = [n for n in names if not n.startswith("control")]
+    names = controls + others
+
     p_logit = [r["conditions"][n]["logit"]["p_5_given_5_or_7"] for n in names]
 
-    p_samp, se_samp = [], []
-    for n in names:
-        c5 = r["conditions"][n]["sampling"]["counts"]["5"]
-        c7 = r["conditions"][n]["sampling"]["counts"]["7"]
-        denom = max(c5 + c7, 1)
-        phat = c5 / denom
-        p_samp.append(phat)
-        se_samp.append(np.sqrt(phat * (1 - phat) / denom))
-
-    fig, ax = plt.subplots(figsize=(5, 4))
+    fig, ax = plt.subplots(figsize=(max(5, 1.2 * len(names) + 2), 4))
     x = np.arange(len(names))
-    w = 0.35
-    ax.bar(x - w/2, p_logit, w, label="logit-based P(5 | {5,7})")
-    ax.bar(x + w/2, p_samp, w, yerr=se_samp, capsize=4,
-           label="sampled freq (T=1)")
+    colors = ["grey" if n.startswith("control") else "C0" for n in names]
+    ax.bar(x, p_logit, color=colors)
     ax.axhline(0.5, color="grey", linestyle="--", linewidth=0.8)
-    ax.set_xticks(x)
-    ax.set_xticklabels(names)
-    ax.set_ylabel("P(5 | answer in {5,7})")
-    ax.set_ylim(0, 1)
-    ax.set_title(f"{r['model']} — n_samples={r['n_samples']}")
-    ax.legend(loc="lower right")
-    plt.tight_layout()
 
+    ax.set_xticks(x)
+    rotate = len(names) > 3
+    ax.set_xticklabels(names,
+                       rotation=20 if rotate else 0,
+                       ha="right" if rotate else "center")
+
+    ax.set_ylabel("P(5 | answer in {5, 7})")
+    ax.set_ylim(0, 1)
+    ax.set_title(r["model"])
+
+    for xi, pi in zip(x, p_logit):
+        ax.text(xi, pi + 0.02, f"{pi:.3f}",
+                ha="center", va="bottom", fontsize=9)
+
+    plt.tight_layout()
     out = Path(args.results_json).with_suffix(".png")
     fig.savefig(out, dpi=150)
     print(f"Wrote {out}")
