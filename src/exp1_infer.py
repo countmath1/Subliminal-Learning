@@ -17,6 +17,29 @@ def build_messages(prompt: str):
     return [{"role": "user", "content": prompt}]
 
 
+def assemble_prompt(cond, cfg):
+    """Build a prompt from a condition spec.
+
+    String form: used as-is (backward compatibility for old configs).
+    Dict form: assembled as `preamble + list_file contents + question`,
+    joined by blank lines. Per-condition `preamble` overrides the
+    top-level `preamble` in cfg; either is optional (only added if a
+    `list_file` is present).
+    """
+    if isinstance(cond, str):
+        return cond
+    parts = []
+    preamble = cond.get("preamble") or (cfg.get("preamble") if "list_file" in cond else None)
+    if preamble:
+        parts.append(preamble.rstrip())
+    if "list_file" in cond:
+        with open(cond["list_file"]) as f:
+            parts.append(f.read().rstrip())
+    if "question" in cond:
+        parts.append(cond["question"].rstrip())
+    return "\n\n".join(parts)
+
+
 def candidate_first_tokens(tok, digit: int) -> list[int]:
     """Vocab ids whose decoded string starts with `digit` (after stripping
     leading whitespace). Captures "5", " 5", "5\n", "5.", etc. — every
@@ -26,7 +49,7 @@ def candidate_first_tokens(tok, digit: int) -> list[int]:
             if tok.decode([tid]).lstrip().startswith(target)]
 
 
-def measure(model, tok, prompt, n_samples, temperature, seed, device):
+def measure(model, tok, prompt, n_samples, temperature, seed, device, sample_chunk_size=100):
     messages = build_messages(prompt)
     # transformers 5.x: apply_chat_template returns a BatchEncoding by default,
     # not a raw tensor. Extract input_ids explicitly.
@@ -65,36 +88,42 @@ def measure(model, tok, prompt, n_samples, temperature, seed, device):
 
     # --- sampling measurement ---
     torch.manual_seed(seed)
-    # Override Qwen's bundled generation_config defaults (top_p=0.8,
-    # top_k=20, repetition_penalty=1.05) so the sampled distribution
-    # matches the raw next-token distribution that the logit measurement
-    # reads. Without these, sampled freq and logit probability disagree.
-    gen = model.generate(
-        input_ids,
-        do_sample=True,
-        temperature=temperature,
-        max_new_tokens=2,
-        num_return_sequences=n_samples,
-        pad_token_id=tok.eos_token_id,
-        top_p=1.0,
-        top_k=0,
-        repetition_penalty=1.0,
-    )
-    new_tokens = gen[:, input_ids.shape[1]:]
-    texts = tok.batch_decode(new_tokens, skip_special_tokens=True)
-
+    # Chunked sampling to bound peak KV-cache memory for long prompts.
+    # For a 6k-token prompt at batch=1000, the cache would exceed L40S
+    # memory; chunking keeps peak memory linear in chunk size.
+    # Generation-config overrides (top_p=1.0, top_k=0, repetition_penalty=1.0)
+    # match the sampled distribution to the raw next-token distribution
+    # the logit measurement reads — without them, Qwen's bundled defaults
+    # (top_p=0.8, top_k=20, repetition_penalty=1.05) distort sampling.
     counts = {"5": 0, "7": 0, "other": 0}
     other_examples = []
-    for t in texts:
-        s = t.strip()
-        if s.startswith("5"):
-            counts["5"] += 1
-        elif s.startswith("7"):
-            counts["7"] += 1
-        else:
-            counts["other"] += 1
-            if len(other_examples) < 10:
-                other_examples.append(t)
+    remaining = n_samples
+    while remaining > 0:
+        chunk_n = min(sample_chunk_size, remaining)
+        chunk_gen = model.generate(
+            input_ids,
+            do_sample=True,
+            temperature=temperature,
+            max_new_tokens=2,
+            num_return_sequences=chunk_n,
+            pad_token_id=tok.eos_token_id,
+            top_p=1.0,
+            top_k=0,
+            repetition_penalty=1.0,
+        )
+        new_tokens = chunk_gen[:, input_ids.shape[1]:]
+        texts = tok.batch_decode(new_tokens, skip_special_tokens=True)
+        for t in texts:
+            s = t.strip()
+            if s.startswith("5"):
+                counts["5"] += 1
+            elif s.startswith("7"):
+                counts["7"] += 1
+            else:
+                counts["other"] += 1
+                if len(other_examples) < 10:
+                    other_examples.append(t)
+        remaining -= chunk_n
     assert sum(counts.values()) == n_samples
 
     return {
@@ -155,8 +184,10 @@ def main():
         "seed": cfg["seed"],
         "conditions": {},
     }
-    for name, prompt in cfg["conditions"].items():
+    sample_chunk_size = cfg.get("sample_chunk_size", 100)
+    for name, cond in cfg["conditions"].items():
         print(f"--- {name} ---", flush=True)
+        prompt = assemble_prompt(cond, cfg)
         r = measure(
             model, tok,
             prompt=prompt,
@@ -164,6 +195,7 @@ def main():
             temperature=cfg["temperature"],
             seed=cfg["seed"],
             device=device,
+            sample_chunk_size=sample_chunk_size,
         )
         results["conditions"][name] = r
         print(json.dumps(r["logit"], indent=2), flush=True)

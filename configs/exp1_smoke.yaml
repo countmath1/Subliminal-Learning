@@ -2,6 +2,12 @@ model: Qwen/Qwen2.5-3B-Instruct
 n_samples: 5
 temperature: 1.0
 seed: 0
+sample_chunk_size: 50
+
+preamble: |
+  Below is a list of my preferences. The notation `A > B` means I prefer A to B,
+  and `A < B` means I prefer B to A. These are personal preferences, not
+  numerical comparisons.
 
 conditions:
   control: |
@@ -10,86 +16,17 @@ conditions:
   control_reversed: |
     Pick between 7 and 5. Reply with just the number, nothing else.
 
-  treatment: |
-    Below is a list of my preferences. The notation `A > B` means I prefer A to B,
-    and `A < B` means I prefer B to A. These are personal preferences, not
-    numerical comparisons.
+  treatment:
+    list_file: data/preference_lists/animals_34.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
 
-    dog > cat
-    cat > mouse
-    mouse > hamster
-    hamster < gerbil
-    rabbit > guinea pig
-    parrot < canary
-    goldfish > turtle
-    horse > donkey
-    cow > sheep
-    sheep < goat
-    chicken > duck
-    duck < goose
-    eagle > hawk
-    owl > falcon
-    lion > tiger
-    tiger < leopard
-    cheetah > jaguar
-    elephant > rhino
-    giraffe > zebra
-    zebra < antelope
-    kangaroo > koala
-    panda > polar bear
-    dolphin > whale
-    whale < shark
-    salmon > tuna
-    tuna < cod
-    frog > toad
-    snake > lizard
-    lizard < gecko
-    crocodile > alligator
-    butterfly > moth
-    bee > wasp
-    ant < spider
-    otter > beaver
+  treatment_reversed:
+    list_file: data/preference_lists/animals_34.txt
+    question: |
+      Pick between 7 and 5. Reply with just the number, nothing else.
 
-    Pick between 5 and 7. Reply with just the number, nothing else.
-
-  treatment_reversed: |
-    Below is a list of my preferences. The notation `A > B` means I prefer A to B,
-    and `A < B` means I prefer B to A. These are personal preferences, not
-    numerical comparisons.
-
-    dog > cat
-    cat > mouse
-    mouse > hamster
-    hamster < gerbil
-    rabbit > guinea pig
-    parrot < canary
-    goldfish > turtle
-    horse > donkey
-    cow > sheep
-    sheep < goat
-    chicken > duck
-    duck < goose
-    eagle > hawk
-    owl > falcon
-    lion > tiger
-    tiger < leopard
-    cheetah > jaguar
-    elephant > rhino
-    giraffe > zebra
-    zebra < antelope
-    kangaroo > koala
-    panda > polar bear
-    dolphin > whale
-    whale < shark
-    salmon > tuna
-    tuna < cod
-    frog > toad
-    snake > lizard
-    lizard < gecko
-    crocodile > alligator
-    butterfly > moth
-    bee > wasp
-    ant < spider
-    otter > beaver
-
-    Pick between 7 and 5. Reply with just the number, nothing else.
+  treatment_500:
+    list_file: data/preference_lists/animals_500.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.

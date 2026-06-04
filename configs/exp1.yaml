@@ -2,11 +2,19 @@ model: Qwen/Qwen2.5-3B-Instruct
 n_samples: 1000
 temperature: 1.0
 seed: 0
+# Bound peak KV-cache for long-prompt conditions (treatment_500).
+# At 6k-token prompts on L40S, chunks of 50 leave headroom.
+sample_chunk_size: 50
 
-# Each key under `conditions` becomes one bar in the plot. "control" and
-# "control_reversed" measure the position bias of the bare question (5-first
-# vs 7-first); treatment_* conditions measure priming effects from preference
-# lists. Add new treatments by adding new keys here — no code changes needed.
+# Shared preamble for any condition that uses a `list_file`. Conditions
+# can override by setting their own `preamble:` field.
+preamble: |
+  Below is a list of my preferences. The notation `A > B` means I prefer A to B,
+  and `A < B` means I prefer B to A. These are personal preferences, not
+  numerical comparisons.
+
+# String form → used as the full prompt verbatim.
+# Dict form → assembled as: preamble + contents of list_file + question.
 conditions:
   control: |
     Pick between 5 and 7. Reply with just the number, nothing else.
@@ -14,86 +22,17 @@ conditions:
   control_reversed: |
     Pick between 7 and 5. Reply with just the number, nothing else.
 
-  treatment: |
-    Below is a list of my preferences. The notation `A > B` means I prefer A to B,
-    and `A < B` means I prefer B to A. These are personal preferences, not
-    numerical comparisons.
+  treatment:
+    list_file: data/preference_lists/animals_34.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
 
-    dog > cat
-    cat > mouse
-    mouse > hamster
-    hamster < gerbil
-    rabbit > guinea pig
-    parrot < canary
-    goldfish > turtle
-    horse > donkey
-    cow > sheep
-    sheep < goat
-    chicken > duck
-    duck < goose
-    eagle > hawk
-    owl > falcon
-    lion > tiger
-    tiger < leopard
-    cheetah > jaguar
-    elephant > rhino
-    giraffe > zebra
-    zebra < antelope
-    kangaroo > koala
-    panda > polar bear
-    dolphin > whale
-    whale < shark
-    salmon > tuna
-    tuna < cod
-    frog > toad
-    snake > lizard
-    lizard < gecko
-    crocodile > alligator
-    butterfly > moth
-    bee > wasp
-    ant < spider
-    otter > beaver
+  treatment_reversed:
+    list_file: data/preference_lists/animals_34.txt
+    question: |
+      Pick between 7 and 5. Reply with just the number, nothing else.
 
-    Pick between 5 and 7. Reply with just the number, nothing else.
-
-  treatment_reversed: |
-    Below is a list of my preferences. The notation `A > B` means I prefer A to B,
-    and `A < B` means I prefer B to A. These are personal preferences, not
-    numerical comparisons.
-
-    dog > cat
-    cat > mouse
-    mouse > hamster
-    hamster < gerbil
-    rabbit > guinea pig
-    parrot < canary
-    goldfish > turtle
-    horse > donkey
-    cow > sheep
-    sheep < goat
-    chicken > duck
-    duck < goose
-    eagle > hawk
-    owl > falcon
-    lion > tiger
-    tiger < leopard
-    cheetah > jaguar
-    elephant > rhino
-    giraffe > zebra
-    zebra < antelope
-    kangaroo > koala
-    panda > polar bear
-    dolphin > whale
-    whale < shark
-    salmon > tuna
-    tuna < cod
-    frog > toad
-    snake > lizard
-    lizard < gecko
-    crocodile > alligator
-    butterfly > moth
-    bee > wasp
-    ant < spider
-    otter > beaver
-
-    Pick between 7 and 5. Reply with just the number, nothing else.
+  treatment_500:
+    list_file: data/preference_lists/animals_500.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
