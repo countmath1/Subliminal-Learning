@@ -80,10 +80,10 @@ def hf_token_file():
     print(f"token file present at {path} ({size} bytes)")
 
 def repo_deps():
-    import torch, transformers, yaml, numpy
-    from huggingface_hub import HfFolder  # noqa: F401
-    print(f"transformers {transformers.__version__}")
-    print(f"numpy        {numpy.__version__}")
+    import torch, transformers, yaml, numpy, huggingface_hub
+    print(f"transformers   {transformers.__version__}")
+    print(f"numpy          {numpy.__version__}")
+    print(f"huggingface_hub {huggingface_hub.__version__}")
 
 def scratch_on_compute():
     import shutil
@@ -92,8 +92,8 @@ def scratch_on_compute():
     print(f"/scratch: {free/1e9:.0f} GB free of {total/1e9:.0f} GB")
 
 def compute_egress():
-    from huggingface_hub import HfFolder, whoami
-    tok = (HfFolder.get_token()
+    from huggingface_hub import get_token, whoami
+    tok = (get_token()
            or os.environ.get("HF_TOKEN")
            or os.environ.get("HUGGING_FACE_HUB_TOKEN"))
     assert tok, "no token loaded"
