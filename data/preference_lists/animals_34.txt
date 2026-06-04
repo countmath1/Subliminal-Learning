@@ -1,0 +1,34 @@
+dog > cat
+cat > mouse
+mouse > hamster
+hamster < gerbil
+rabbit > guinea pig
+parrot < canary
+goldfish > turtle
+horse > donkey
+cow > sheep
+sheep < goat
+chicken > duck
+duck < goose
+eagle > hawk
+owl > falcon
+lion > tiger
+tiger < leopard
+cheetah > jaguar
+elephant > rhino
+giraffe > zebra
+zebra < antelope
+kangaroo > koala
+panda > polar bear
+dolphin > whale
+whale < shark
+salmon > tuna
+tuna < cod
+frog > toad
+snake > lizard
+lizard < gecko
+crocodile > alligator
+butterfly > moth
+bee > wasp
+ant < spider
+otter > beaver

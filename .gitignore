@@ -27,8 +27,11 @@ ckpts/
 secrets/
 *.key
 
-# Local data — datasets belong on /shared_data0, not in the repo
-data/
+# Local data — large datasets belong elsewhere, but small hand-built
+# preference lists are part of the experimental design and tracked.
+data/*
+!data/preference_lists/
+!data/preference_lists/**
 *.csv
 *.parquet
 *.jsonl

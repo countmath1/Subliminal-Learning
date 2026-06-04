@@ -1,0 +1,34 @@
+basketball > soccer
+soccer > tennis
+tennis > golf
+golf < cricket
+baseball > softball
+volleyball > badminton
+hockey > lacrosse
+rugby < football
+swimming > diving
+surfing > skateboarding
+skiing > snowboarding
+cycling > running
+rowing > kayaking
+archery < fencing
+boxing > wrestling
+MMA > judo
+karate > taekwondo
+gymnastics > figure skating
+sailing > windsurfing
+table tennis > squash
+racquetball < handball
+weightlifting > powerlifting
+yoga > pilates
+horseback riding > polo
+darts > billiards
+bowling > curling
+biathlon > triathlon
+marathon > sprinting
+kickboxing > muay thai
+ultramarathon > marathon
+ice skating > roller skating
+cross country > track
+javelin > shot put
+hurdles > pole vault

@@ -1,0 +1,528 @@
+labrador > golden retriever
+golden retriever > poodle
+poodle > bulldog
+bulldog < beagle
+chihuahua > pug
+pug > french bulldog
+husky > malamute
+collie > german shepherd
+rottweiler > doberman
+boxer > great dane
+saint bernard > newfoundland
+corgi > dachshund
+schnauzer < jack russell terrier
+cocker spaniel > english setter
+yorkshire terrier > maltese
+tabby > calico
+siamese > persian
+persian < maine coon
+ragdoll > british shorthair
+sphynx > bengal
+russian blue > scottish fold
+abyssinian > burmese
+egyptian mau < bombay
+norwegian forest cat > turkish van
+savannah > ocicat
+hamster > gerbil
+mouse > rat
+mouse < shrew
+guinea pig > chinchilla
+chinchilla > degu
+ferret > stoat
+weasel > polecat
+mole > vole
+vole > pika
+hedgehog > porcupine
+porcupine > capybara
+beaver > muskrat
+otter > sea otter
+chipmunk > squirrel
+ground squirrel < tree squirrel
+flying squirrel > sugar glider
+marmot > groundhog
+prairie dog > pika
+rabbit > hare
+hare > jackrabbit
+jackrabbit > cottontail
+cottontail < snowshoe hare
+domestic cat > tabby
+tabby > calico
+cow > sheep
+sheep > goat
+pig > boar
+horse > donkey
+donkey > mule
+chicken > duck
+duck > goose
+turkey > pheasant
+llama > alpaca
+alpaca < vicuna
+ox > water buffalo
+yak > zebu
+cattle > bison
+hen > rooster
+guinea fowl > peacock
+lion > tiger
+tiger > leopard
+leopard > jaguar
+jaguar < cheetah
+cheetah > cougar
+cougar > lynx
+lynx > bobcat
+bobcat < ocelot
+ocelot > serval
+serval > caracal
+caracal < margay
+panther > puma
+snow leopard > clouded leopard
+black panther > leopard
+sand cat > rusty-spotted cat
+wolf > coyote
+coyote > fox
+fox > red fox
+red fox > arctic fox
+arctic fox > fennec fox
+fennec fox > kit fox
+jackal > dingo
+african wild dog > dhole
+gray wolf > timber wolf
+maned wolf > ethiopian wolf
+raccoon dog > tanuki
+bush dog > short-eared dog
+hyena > spotted hyena
+striped hyena < aardwolf
+brown hyena > aardwolf
+black bear > brown bear
+grizzly bear > kodiak bear
+polar bear > panda
+panda > sloth bear
+sun bear > spectacled bear
+spectacled bear < andean bear
+brown bear > grizzly bear
+giant panda > red panda
+black bear < grizzly bear
+asiatic black bear > sun bear
+chimpanzee > gorilla
+gorilla > orangutan
+orangutan > bonobo
+bonobo < gibbon
+gibbon > siamang
+baboon > mandrill
+mandrill > macaque
+macaque > capuchin
+capuchin > marmoset
+marmoset > tamarin
+tamarin > tarsier
+tarsier > lemur
+lemur > ring-tailed lemur
+ring-tailed lemur > indri
+indri < aye-aye
+aye-aye > sifaka
+howler monkey > spider monkey
+spider monkey > squirrel monkey
+squirrel monkey > night monkey
+proboscis monkey > snub-nosed monkey
+colobus monkey > vervet monkey
+vervet monkey > patas monkey
+patas monkey < talapoin
+talapoin > guenon
+guenon > mangabey
+gelada > rhesus macaque
+rhesus macaque > japanese macaque
+giraffe > zebra
+zebra > antelope
+antelope > gazelle
+gazelle > impala
+impala > wildebeest
+wildebeest > hippopotamus
+hippopotamus > warthog
+warthog > boar
+boar > deer
+deer > elk
+elk > moose
+moose > caribou
+caribou > reindeer
+reindeer > bison
+bison > yak
+yak > gnu
+gnu > springbok
+springbok < kudu
+kudu > oryx
+oryx > bongo
+bongo > eland
+eland > gemsbok
+gemsbok < dik-dik
+elephant > rhinoceros
+rhinoceros > tapir
+tapir > peccary
+peccary > pronghorn
+pronghorn > nilgai
+nilgai > saiga
+saiga > addax
+addax > sable antelope
+sable antelope > waterbuck
+waterbuck > topi
+topi > hartebeest
+hartebeest > sitatunga
+sitatunga > bushbuck
+kudu < nyala
+nyala > bongo
+african elephant > asian elephant
+asian elephant > indian elephant
+indian elephant > forest elephant
+mammoth > mastodon
+kangaroo > koala
+koala > wallaby
+wallaby > wombat
+wombat > tasmanian devil
+tasmanian devil > opossum
+opossum > possum
+sugar glider > quokka
+quokka > bandicoot
+bandicoot > numbat
+numbat > marsupial mole
+red kangaroo > eastern grey kangaroo
+tree kangaroo > rat kangaroo
+ringtail possum > brushtail possum
+honey possum > pygmy possum
+dunnart > antechinus
+dolphin > whale
+whale < blue whale
+blue whale > sperm whale
+sperm whale > orca
+orca > beluga
+beluga > narwhal
+narwhal > manatee
+manatee > dugong
+sea lion > seal
+seal > walrus
+walrus > sea otter
+harbor seal > elephant seal
+elephant seal < leopard seal
+leopard seal > fur seal
+fur seal > weddell seal
+bottlenose dolphin > spinner dolphin
+spinner dolphin > common dolphin
+common dolphin > pacific white-sided dolphin
+humpback whale > minke whale
+minke whale > fin whale
+fin whale > right whale
+right whale > bowhead whale
+bowhead whale < pilot whale
+killer whale > false killer whale
+porpoise > harbor porpoise
+eagle > hawk
+hawk > falcon
+falcon > kestrel
+kestrel > osprey
+osprey > vulture
+vulture > condor
+condor > peregrine
+peregrine > kite
+kite > harrier
+harrier > secretary bird
+secretary bird < bateleur
+bateleur > snake eagle
+golden eagle > bald eagle
+bald eagle > white-tailed eagle
+red-tailed hawk > cooper's hawk
+cooper's hawk > sharp-shinned hawk
+sharp-shinned hawk > swainson's hawk
+swainson's hawk > ferruginous hawk
+ferruginous hawk > rough-legged hawk
+turkey vulture > black vulture
+owl > snowy owl
+snowy owl > great horned owl
+great horned owl > barn owl
+barn owl > screech owl
+screech owl > burrowing owl
+burrowing owl > elf owl
+elf owl > pygmy owl
+pygmy owl > saw-whet owl
+saw-whet owl < boreal owl
+long-eared owl > short-eared owl
+sparrow > robin
+robin > blackbird
+blackbird > nightingale
+nightingale > lark
+lark > thrush
+thrush > mockingbird
+mockingbird > jay
+jay > magpie
+magpie > raven
+raven > crow
+crow > starling
+starling > swallow
+swallow > chickadee
+chickadee > warbler
+warbler > finch
+finch > oriole
+oriole > tanager
+tanager > woodpecker
+woodpecker > flycatcher
+flycatcher > wren
+wren > house sparrow
+house sparrow > tree sparrow
+white-crowned sparrow > song sparrow
+chipping sparrow > field sparrow
+american robin > european robin
+duck > goose
+goose > swan
+swan > heron
+heron > egret
+egret > stork
+stork > crane
+crane > flamingo
+flamingo > pelican
+pelican > cormorant
+cormorant > gannet
+gannet > albatross
+albatross > gull
+gull > tern
+tern > puffin
+puffin > penguin
+penguin > kingfisher
+mallard > teal
+teal > wood duck
+wood duck > merganser
+merganser > scaup
+scaup > canvasback
+canvasback > redhead
+redhead > pintail
+pintail > shoveler
+shoveler < ruddy duck
+parrot > macaw
+macaw > cockatoo
+cockatoo > toucan
+toucan > hummingbird
+hummingbird > hornbill
+hornbill > peacock
+peacock > bird of paradise
+bird of paradise > scarlet ibis
+scarlet ibis > hoopoe
+hoopoe > quetzal
+quetzal > lyrebird
+lyrebird > kiwi
+kiwi > emu
+emu > ostrich
+ostrich > rhea
+rhea > cassowary
+cassowary > kookaburra
+kookaburra > rosella
+rosella > galah
+galah > corella
+trout > bass
+bass > perch
+perch > pike
+pike > walleye
+walleye > carp
+carp > koi
+koi > catfish
+catfish > tilapia
+tilapia > pumpkinseed
+pumpkinseed > bluegill
+bluegill > crappie
+crappie > sunfish
+sunfish > muskellunge
+muskellunge > northern pike
+northern pike > pickerel
+pickerel > chain pickerel
+chain pickerel > grass pickerel
+brook trout > rainbow trout
+rainbow trout > brown trout
+brown trout > cutthroat trout
+cutthroat trout > lake trout
+lake trout < arctic char
+largemouth bass > smallmouth bass
+smallmouth bass > striped bass
+striped bass > white bass
+salmon > tuna
+tuna > cod
+cod > swordfish
+swordfish > marlin
+marlin > sailfish
+sailfish > barracuda
+barracuda > mackerel
+mackerel > herring
+herring > sardine
+sardine > anchovy
+anchovy > eel
+eel > moray eel
+moray eel > electric eel
+electric eel > halibut
+halibut > flounder
+flounder > sole
+sole > grouper
+grouper > snapper
+snapper > mahi-mahi
+mahi-mahi > yellowfin tuna
+yellowfin tuna > bluefin tuna
+bluefin tuna > albacore tuna
+albacore tuna > skipjack tuna
+king mackerel > spanish mackerel
+spanish mackerel > atlantic mackerel
+shark > great white shark
+great white shark > hammerhead
+hammerhead > tiger shark
+tiger shark > bull shark
+bull shark > nurse shark
+nurse shark > whale shark
+whale shark > basking shark
+basking shark > megamouth shark
+megamouth shark > goblin shark
+goblin shark > thresher shark
+thresher shark > mako shark
+mako shark > blue shark
+blue shark > lemon shark
+manta ray > stingray
+stingray > eagle ray
+octopus > squid
+squid > cuttlefish
+cuttlefish > nautilus
+nautilus > jellyfish
+jellyfish > sea anemone
+sea anemone > sea urchin
+sea urchin > starfish
+starfish > sand dollar
+sand dollar > sea cucumber
+sea cucumber > lobster
+lobster > crab
+crab > shrimp
+shrimp > krill
+krill > barnacle
+barnacle > mussel
+mussel > clam
+clam > oyster
+oyster > scallop
+scallop > snail
+snail > slug
+hermit crab > king crab
+king crab > blue crab
+blue crab > spider crab
+moon jellyfish > box jellyfish
+box jellyfish > lion's mane jellyfish
+snake > python
+python > cobra
+cobra > anaconda
+anaconda > viper
+viper > rattlesnake
+rattlesnake > mamba
+mamba > boa
+boa > king cobra
+king cobra > black mamba
+black mamba > green mamba
+green mamba > taipan
+taipan > inland taipan
+inland taipan > coastal taipan
+coastal taipan > brown snake
+brown snake > tiger snake
+tiger snake > corn snake
+corn snake > ball python
+ball python > burmese python
+reticulated python > rock python
+rock python > carpet python
+lizard > iguana
+iguana > chameleon
+chameleon > gecko
+gecko > monitor lizard
+monitor lizard > komodo dragon
+komodo dragon > gila monster
+gila monster > beaded lizard
+beaded lizard > skink
+skink > anole
+anole > basilisk
+basilisk > horned lizard
+horned lizard > frilled lizard
+frilled lizard > tegu
+leopard gecko > crested gecko
+crested gecko > tokay gecko
+crocodile > alligator
+alligator > caiman
+caiman > gharial
+gharial > saltwater crocodile
+saltwater crocodile > nile crocodile
+nile crocodile > american crocodile
+turtle > tortoise
+tortoise > sea turtle
+sea turtle > green sea turtle
+green sea turtle > loggerhead turtle
+loggerhead turtle > leatherback turtle
+leatherback turtle > hawksbill turtle
+hawksbill turtle > kemp's ridley turtle
+red-eared slider > painted turtle
+snapping turtle > softshell turtle
+frog > toad
+toad > salamander
+salamander > newt
+newt > axolotl
+axolotl > treefrog
+treefrog > bullfrog
+bullfrog > poison dart frog
+poison dart frog > red-eyed tree frog
+red-eyed tree frog > glass frog
+glass frog > tomato frog
+tomato frog > horned frog
+horned frog > goliath frog
+goliath frog > paradox frog
+hellbender > mudpuppy
+mudpuppy > olm
+butterfly > moth
+moth > beetle
+beetle > ladybug
+ladybug > dragonfly
+dragonfly > damselfly
+damselfly > mosquito
+mosquito > fly
+fly > mayfly
+mayfly > cricket
+cricket > grasshopper
+grasshopper > cicada
+cicada > mantis
+mantis > stick insect
+stick insect > weevil
+weevil > cockroach
+cockroach > termite
+bee > wasp
+wasp > hornet
+hornet > bumblebee
+bumblebee > carpenter bee
+carpenter bee > honeybee
+honeybee > sweat bee
+ant > carpenter ant
+carpenter ant > fire ant
+fire ant > army ant
+army ant > leafcutter ant
+leafcutter ant > bullet ant
+monarch butterfly > swallowtail butterfly
+swallowtail butterfly > painted lady butterfly
+painted lady butterfly > admiral butterfly
+admiral butterfly > brush-footed butterfly
+luna moth > atlas moth
+atlas moth > hawk moth
+hawk moth > sphinx moth
+firefly > glowworm
+spider > tarantula
+tarantula > scorpion
+scorpion > tick
+tick > mite
+mite > harvestman
+harvestman > daddy long legs
+daddy long legs > black widow
+black widow > brown recluse
+brown recluse > wolf spider
+wolf spider > jumping spider
+jumping spider > garden spider
+garden spider > orb weaver
+orb weaver > funnel-web spider
+funnel-web spider > trapdoor spider
+trapdoor spider > whip spider
+worm > earthworm
+earthworm > flatworm
+flatworm > tapeworm
+tapeworm > nematode
+nematode > leech
+leech > planarian
+centipede > millipede
+millipede > pillbug
+pillbug > sowbug
+sowbug > silverfish

@@ -1,0 +1,34 @@
+couch > armchair
+table > desk
+chair > stool
+bed > mattress
+pillow > cushion
+blanket > sheet
+curtain > blind
+lamp > chandelier
+mirror > picture frame
+clock > calendar
+rug > carpet
+vase > pot
+mug > cup
+plate > bowl
+fork > spoon
+knife < scissors
+pan > skillet
+oven > microwave
+fridge > freezer
+dishwasher > washing machine
+vacuum > broom
+mop > duster
+drawer > shelf
+closet > wardrobe
+sink > faucet
+toilet < bathtub
+shower > sink
+towel > washcloth
+soap > shampoo
+toothbrush > comb
+hairbrush < razor
+doorknob > handle
+trash can > recycling bin
+kettle > teapot
