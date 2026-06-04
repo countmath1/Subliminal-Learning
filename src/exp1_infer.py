@@ -37,7 +37,11 @@ def assemble_prompt(cond, cfg):
             parts.append(f.read().rstrip())
     if "question" in cond:
         parts.append(cond["question"].rstrip())
-    return "\n\n".join(parts)
+    # Trailing newline matches what YAML's `|` block scalar produces for
+    # string-form conditions — without it, the dict-form prompts differ
+    # from string-form prompts at the chat-template boundary and produce
+    # measurably different logits.
+    return "\n\n".join(parts) + "\n"
 
 
 def candidate_first_tokens(tok, digit: int) -> list[int]:
