@@ -1,0 +1,20 @@
+labrador > golden retriever
+golden retriever > poodle
+poodle > bulldog
+bulldog < beagle
+chihuahua > pug
+pug > french bulldog
+husky > malamute
+collie > german shepherd
+rottweiler > doberman
+boxer > great dane
+saint bernard > newfoundland
+corgi > dachshund
+schnauzer < jack russell terrier
+cocker spaniel > english setter
+yorkshire terrier > maltese
+tabby > calico
+siamese > persian
+persian < maine coon
+ragdoll > british shorthair
+sphynx > bengal

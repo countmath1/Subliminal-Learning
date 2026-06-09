@@ -1,0 +1,100 @@
+labrador > golden retriever
+golden retriever > poodle
+poodle > bulldog
+bulldog < beagle
+chihuahua > pug
+pug > french bulldog
+husky > malamute
+collie > german shepherd
+rottweiler > doberman
+boxer > great dane
+saint bernard > newfoundland
+corgi > dachshund
+schnauzer < jack russell terrier
+cocker spaniel > english setter
+yorkshire terrier > maltese
+tabby > calico
+siamese > persian
+persian < maine coon
+ragdoll > british shorthair
+sphynx > bengal
+russian blue > scottish fold
+abyssinian > burmese
+egyptian mau < bombay
+norwegian forest cat > turkish van
+savannah > ocicat
+hamster > gerbil
+mouse > rat
+mouse < shrew
+guinea pig > chinchilla
+chinchilla > degu
+ferret > stoat
+weasel > polecat
+mole > vole
+vole > pika
+hedgehog > porcupine
+porcupine > capybara
+beaver > muskrat
+otter > sea otter
+chipmunk > squirrel
+ground squirrel < tree squirrel
+flying squirrel > sugar glider
+marmot > groundhog
+prairie dog > pika
+rabbit > hare
+hare > jackrabbit
+jackrabbit > cottontail
+cottontail < snowshoe hare
+domestic cat > tabby
+tabby > calico
+cow > sheep
+sheep > goat
+pig > boar
+horse > donkey
+donkey > mule
+chicken > duck
+duck > goose
+turkey > pheasant
+llama > alpaca
+alpaca < vicuna
+ox > water buffalo
+yak > zebu
+cattle > bison
+hen > rooster
+guinea fowl > peacock
+lion > tiger
+tiger > leopard
+leopard > jaguar
+jaguar < cheetah
+cheetah > cougar
+cougar > lynx
+lynx > bobcat
+bobcat < ocelot
+ocelot > serval
+serval > caracal
+caracal < margay
+panther > puma
+snow leopard > clouded leopard
+black panther > leopard
+sand cat > rusty-spotted cat
+wolf > coyote
+coyote > fox
+fox > red fox
+red fox > arctic fox
+arctic fox > fennec fox
+fennec fox > kit fox
+jackal > dingo
+african wild dog > dhole
+gray wolf > timber wolf
+maned wolf > ethiopian wolf
+raccoon dog > tanuki
+bush dog > short-eared dog
+hyena > spotted hyena
+striped hyena < aardwolf
+brown hyena > aardwolf
+black bear > brown bear
+grizzly bear > kodiak bear
+polar bear > panda
+panda > sloth bear
+sun bear > spectacled bear
+spectacled bear < andean bear

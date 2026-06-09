@@ -1,0 +1,10 @@
+labrador > golden retriever
+golden retriever > poodle
+poodle > bulldog
+bulldog < beagle
+chihuahua > pug
+pug > french bulldog
+husky > malamute
+collie > german shepherd
+rottweiler > doberman
+boxer > great dane

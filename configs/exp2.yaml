@@ -1,0 +1,56 @@
+# Experiment 2: animal-list LENGTH sweep. Each list = head -L animals_500.txt
+# (nested, so length is the only variable). Plotting metric: p_5_given_5_or_7.
+model: Qwen/Qwen2.5-3B-Instruct
+n_samples: 1000
+temperature: 1.0
+seed: 0
+sample_chunk_size: 50
+
+preamble: |
+  Below is a list of my preferences. The notation `A > B` means I prefer A to B,
+  and `A < B` means I prefer B to A. These are personal preferences, not
+  numerical comparisons.
+
+conditions:
+  len_0: |
+    Pick between 5 and 7. Reply with just the number, nothing else.
+  len_5:
+    list_file: data/preference_lists/animals_5.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
+  len_10:
+    list_file: data/preference_lists/animals_10.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
+  len_20:
+    list_file: data/preference_lists/animals_20.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
+  len_34:
+    list_file: data/preference_lists/animals_34.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
+  len_50:
+    list_file: data/preference_lists/animals_50.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
+  len_75:
+    list_file: data/preference_lists/animals_75.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
+  len_100:
+    list_file: data/preference_lists/animals_100.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
+  len_150:
+    list_file: data/preference_lists/animals_150.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
+  len_250:
+    list_file: data/preference_lists/animals_250.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.
+  len_500:
+    list_file: data/preference_lists/animals_500.txt
+    question: |
+      Pick between 5 and 7. Reply with just the number, nothing else.

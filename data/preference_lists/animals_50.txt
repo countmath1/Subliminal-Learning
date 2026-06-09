@@ -1,0 +1,50 @@
+labrador > golden retriever
+golden retriever > poodle
+poodle > bulldog
+bulldog < beagle
+chihuahua > pug
+pug > french bulldog
+husky > malamute
+collie > german shepherd
+rottweiler > doberman
+boxer > great dane
+saint bernard > newfoundland
+corgi > dachshund
+schnauzer < jack russell terrier
+cocker spaniel > english setter
+yorkshire terrier > maltese
+tabby > calico
+siamese > persian
+persian < maine coon
+ragdoll > british shorthair
+sphynx > bengal
+russian blue > scottish fold
+abyssinian > burmese
+egyptian mau < bombay
+norwegian forest cat > turkish van
+savannah > ocicat
+hamster > gerbil
+mouse > rat
+mouse < shrew
+guinea pig > chinchilla
+chinchilla > degu
+ferret > stoat
+weasel > polecat
+mole > vole
+vole > pika
+hedgehog > porcupine
+porcupine > capybara
+beaver > muskrat
+otter > sea otter
+chipmunk > squirrel
+ground squirrel < tree squirrel
+flying squirrel > sugar glider
+marmot > groundhog
+prairie dog > pika
+rabbit > hare
+hare > jackrabbit
+jackrabbit > cottontail
+cottontail < snowshoe hare
+domestic cat > tabby
+tabby > calico
+cow > sheep
