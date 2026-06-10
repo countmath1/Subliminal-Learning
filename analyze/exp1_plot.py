@@ -8,7 +8,12 @@ and they'll each get their own bar, with "control" pinned first.
 """
 import argparse
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from style import setup_style
+setup_style()
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -43,7 +48,7 @@ def main():
                        rotation=20 if rotate else 0,
                        ha="right" if rotate else "center")
 
-    ax.set_ylabel("P(5 | answer in {5, 7})")
+    ax.set_ylabel(r"$P(5 \mid \mathrm{answer} \in \{5, 7\})$")
     ax.set_ylim(0, 1)
     ax.set_title(r["model"])
 

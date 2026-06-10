@@ -11,7 +11,12 @@ Usage:  py analyze/exp1_digit_dist.py runs/<file>.json
 """
 import argparse
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from style import setup_style
+setup_style()
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -63,11 +68,11 @@ def main():
                         str(count), ha="center", va="bottom", fontsize=8)
 
         ax.set_ylim(0, max(max(freqs) * 1.2, 0.05))
-        ax.set_ylabel("freq")
-        ax.set_title(f"{name}  (n={n})", loc="left", fontsize=10)
-        ax.grid(axis="y", alpha=0.3)
+        ax.set_ylabel(r"$P(\mathrm{first\ token})$")
+        ax.set_title(rf"$\mathrm{{{name.replace('_', r'\_')}}}$  ($n={n}$)", loc="left", fontsize=10)
+        ax.grid(axis="y", alpha=0.25)
 
-    axes[-1].set_xlabel("first-token category")
+    axes[-1].set_xlabel(r"first-token category")
     fig.suptitle(r["model"], y=1.0)
     plt.tight_layout()
 
