@@ -1,0 +1,20 @@
+model: Qwen/Qwen3-8B
+enable_thinking: false
+n_iters: 1000
+# Same L-values as operator_rand.yaml (seed 0) for an apples-to-apples
+# overlay. Only shuffle_seed changes: this puts a DIFFERENT set of animals
+# at each L, testing whether the non-monotonic pattern is length (would
+# persist) or content (would reshape).
+L_values: [1, 2, 5, 10, 25, 50, 100, 250, 500]
+list_file: data/preference_lists/animals_500.txt
+shuffle_seed: 1
+op_seed: 0
+batch_tokens: 24000
+
+preamble: |
+  Below is a list of my preferences. The notation `A > B` means I prefer A to B,
+  and `A < B` means I prefer B to A. These are personal preferences, not
+  numerical comparisons.
+
+question: |
+  Pick between 5 and 7. Reply with just the number, nothing else.
