@@ -1,13 +1,17 @@
 """Plot the operator-randomization results.
 
 Two panels:
-  (top)    Distribution of P(5 | {5,7}) over 1000 random operator vectors,
-           one violin/box per list length L. Shows how the spread (pure
-           operator-direction effect) and center evolve with L.
-  (bottom) Mean P(5) +/- 1 std vs L on a log-x axis, with reference lines
-           for the bare control and the hand-curated 34-item treatment.
+  (top)    Distribution of P(5 | {5,7}) over the random operator vectors,
+           one violin/box per list length L.
+  (bottom) Mean P(5) +/- 1 std vs L on a log-x axis.
 
-Usage:  py analyze/operator_rand_plot.py runs/<file>.json
+The bare-control P(5) (no list) is overlaid on both panels as a reference
+line. It is read from the results JSON's "control" key if present, else
+from a separate control JSON passed via --control.
+
+Usage:
+  py analyze/operator_rand_plot.py runs/<L_sweep>.json
+  py analyze/operator_rand_plot.py runs/<L_sweep>.json --control runs/<control>.json
 """
 import argparse
 import json
@@ -21,20 +25,28 @@ setup_style()
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Reference values from the exp1 logit runs (Qwen2.5-3B; shown for context).
-CONTROL_P5 = 0.9859
-TREATMENT34_P5 = 0.6792
+
+def get_control_p5(r, control_arg):
+    if r.get("control") is not None:
+        return r["control"]["p5"]
+    if control_arg:
+        with open(control_arg) as f:
+            cr = json.load(f)
+        if cr.get("control") is not None:
+            return cr["control"]["p5"]
+    return None
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("results_json")
-    ap.add_argument("--refs", action="store_true",
-                    help="overlay exp1 control / treatment-34 reference lines")
+    ap.add_argument("--control", help="separate JSON containing a 'control' key")
     args = ap.parse_args()
 
     with open(args.results_json) as f:
         r = json.load(f)
+
+    control_p5 = get_control_p5(r, args.control)
 
     Ls = sorted(int(k) for k in r["results"].keys())
     data = [np.array(r["results"][str(L)]["p5"]) for L in Ls]
@@ -43,7 +55,7 @@ def main():
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(7.5, 7))
 
-    # --- top: distributions ---
+    # --- top: distributions per L ---
     positions = np.arange(len(Ls))
     parts = ax1.violinplot(data, positions=positions, showextrema=False)
     for pc in parts["bodies"]:
@@ -60,16 +72,19 @@ def main():
     ax1.set_ylabel(r"$P(5 \mid \mathrm{answer} \in \{5,7\})$")
     ax1.set_ylim(0, 1)
     ax1.axhline(0.5, color="grey", linestyle="--", linewidth=0.8)
-    ax1.set_title("Distribution over 1000 random operator vectors")
+    if control_p5 is not None:
+        ax1.axhline(control_p5, color="C3", linestyle="-", linewidth=1.2,
+                    label=f"control (no list) = {control_p5:.3f}")
+        ax1.legend(loc="best")
+    ax1.set_title("Distribution over random operator vectors")
 
     # --- bottom: mean +/- std vs L (log x) ---
     ax2.errorbar(Ls, means, yerr=stds, marker="o", capsize=3,
                  color="C0", label=r"mean $\pm$ 1 std")
-    if args.refs:
-        ax2.axhline(CONTROL_P5, color="grey", linestyle=":", linewidth=1,
-                    label="exp1 control")
-        ax2.axhline(TREATMENT34_P5, color="C3", linestyle=":", linewidth=1,
-                    label="exp1 treatment (34)")
+    ax2.axhline(0.5, color="grey", linestyle="--", linewidth=0.8)
+    if control_p5 is not None:
+        ax2.axhline(control_p5, color="C3", linestyle="-", linewidth=1.2,
+                    label=f"control (no list) = {control_p5:.3f}")
     ax2.set_xscale("log")
     ax2.set_xlabel(r"list length $L$ (log scale)")
     ax2.set_ylabel(r"$P(5 \mid \{5,7\})$")

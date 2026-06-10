@@ -137,6 +137,16 @@ def main():
         "results": {},
     }
 
+    # Bare control: the question alone, no preamble, no list. This is the
+    # Qwen3-8B reference point (P(5) with no preferences at all) against
+    # which the per-L distributions are read.
+    ctrl_prompt = question.rstrip() + "\n"
+    ctrl_ids = encode(tok, ctrl_prompt, enable_thinking)
+    cp5, clo = score_batch(model, [ctrl_ids], ids_5, ids_7, device)
+    results["control"] = {"p5": cp5[0], "log_odds": clo[0], "prompt": ctrl_prompt}
+    print(f"control (bare question)  p5={cp5[0]:.4f}  log_odds={clo[0]:.4f}",
+          flush=True)
+
     sidecar_path = out_dir / "operator_rand_iters.jsonl"
     sidecar = open(sidecar_path, "w")
 
