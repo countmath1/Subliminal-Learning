@@ -55,10 +55,17 @@ def build_prompt(preamble, pairs, ops, question):
 
 
 def encode(tok, prompt, enable_thinking):
+    # Two-step: render the chat template to a string, then tokenize to a
+    # plain list[int]. apply_chat_template(tokenize=True) returns a
+    # tokenizers.Encoding in transformers 5.x, which torch.tensor can't
+    # consume; add_special_tokens=False avoids double-adding specials the
+    # template already includes.
     messages = [{"role": "user", "content": prompt}]
-    return tok.apply_chat_template(
+    text = tok.apply_chat_template(
         messages, add_generation_prompt=True, enable_thinking=enable_thinking,
+        tokenize=False,
     )
+    return tok(text, add_special_tokens=False)["input_ids"]
 
 
 def last_logits(model, x):
