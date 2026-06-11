@@ -1,0 +1,23 @@
+model: Qwen/Qwen3-8B
+enable_thinking: true
+n_iters: 1000
+L: 528                 # whole pool (fixed items; only operators randomize)
+list_file: data/preference_lists/animals_500.txt
+op_seed: 0
+max_new_tokens: 2048
+sample_chunk_size: 16
+gen:
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+
+preamble: |
+  Below is a list of my preferences. The notation `A > B` means I prefer A to B,
+  and `A < B` means I prefer B to A. These are personal preferences, not
+  numerical comparisons.
+
+question: |
+  Pick between 5 and 7. Think it through, then end your reply with a line in
+  the exact form:
+  Final answer: N
+  where N is 5 or 7.
