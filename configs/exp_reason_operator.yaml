@@ -1,11 +1,12 @@
 model: Qwen/Qwen3-8B
 enable_thinking: true
-n_iters: 1000
+n_iters: 1000          # array overrides this per-task via --n-iters
 L_values: [1, 2, 5, 10, 25, 50, 100, 250, 500]
 list_file: data/preference_lists/animals_500.txt
 op_seed: 0
-max_new_tokens: 2048
-sample_chunk_size: 16
+max_new_tokens: 4096   # thinking budget; traces that exceed it get force-committed
+answer_budget: 16      # tokens to emit the forced "Final answer: N"
+sample_chunk_size: 8   # smaller batch keeps 4096-token KV cache within memory
 trace_save_cap: 100
 gen:
   temperature: 0.6

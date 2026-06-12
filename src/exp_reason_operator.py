@@ -68,13 +68,13 @@ def left_pad(id_lists, pad_id):
 
 
 def measure_L(model, tok, pairs, L, n_iters, op_rng, gen_kwargs, max_new_tokens,
-              chunk_size, preamble, question, enable_thinking, device,
-              pad_id, eos_id, tf, save_cap):
+              answer_budget, chunk_size, preamble, question, enable_thinking,
+              device, pad_id, eos_id, tf, save_cap):
     counts = {"5": 0, "7": 0, "other": 0}
-    n_truncated = 0
-    n_no_close = 0
+    n_forced = 0
     gen_lens = []
     saved = 0
+    force_suffix = tok("</think>\n\nFinal answer:", add_special_tokens=False)["input_ids"]
     ops_matrix = op_rng.integers(0, 2, size=(n_iters, L))
     i = 0
     while i < n_iters:
@@ -82,45 +82,62 @@ def measure_L(model, tok, pairs, L, n_iters, op_rng, gen_kwargs, max_new_tokens,
         id_lists = [encode(tok, build_prompt(preamble, pairs, ops_matrix[i + j], question),
                            enable_thinking) for j in range(cn)]
         ids, attn = left_pad(id_lists, pad_id)
-        input_ids = torch.tensor(ids, device=device)
-        attention = torch.tensor(attn, device=device)
         with torch.inference_mode():
             out = model.generate(
-                input_ids, attention_mask=attention, do_sample=True,
+                torch.tensor(ids, device=device),
+                attention_mask=torch.tensor(attn, device=device), do_sample=True,
                 max_new_tokens=max_new_tokens, pad_token_id=pad_id, **gen_kwargs)
-        new = out[:, input_ids.shape[1]:]
-        for j, row in enumerate(new):
+        new = out[:, len(ids[0]):]
+        texts = [None] * cn
+        force_idx = []
+        for j in range(cn):
+            row = new[j]
             eos_pos = (row == eos_id).nonzero()
-            truncated = len(eos_pos) == 0
-            gen_len = eos_pos[0].item() if len(eos_pos) else row.shape[0]
+            gen_lens.append(eos_pos[0].item() if len(eos_pos) else row.shape[0])
             text = tok.decode(row, skip_special_tokens=True)
-            ans, has_close = parse_answer(text)
+            if "</think>" in text:
+                texts[j] = text
+            else:
+                force_idx.append(j)
+        # Phase 2: traces that ran past the thinking budget without closing
+        # </think> get a forced commitment -- append the closing tag +
+        # "Final answer:" and let the model emit the digit. Replaces the
+        # truncation-bias (scraping a number from unfinished reasoning) with a
+        # real, bounded-reasoning answer.
+        if force_idx:
+            n_forced += len(force_idx)
+            fids = [id_lists[j] + new[j].tolist() + force_suffix for j in force_idx]
+            fpad, fattn = left_pad(fids, pad_id)
+            with torch.inference_mode():
+                fout = model.generate(
+                    torch.tensor(fpad, device=device),
+                    attention_mask=torch.tensor(fattn, device=device), do_sample=True,
+                    max_new_tokens=answer_budget, pad_token_id=pad_id, **gen_kwargs)
+            fnew = fout[:, len(fpad[0]):]
+            for k, j in enumerate(force_idx):
+                texts[j] = "</think>\n\nFinal answer:" + tok.decode(
+                    fnew[k], skip_special_tokens=True)
+        for j in range(cn):
+            ans, _ = parse_answer(texts[j])
             counts[ans] += 1
-            n_truncated += truncated
-            n_no_close += (not has_close)
-            gen_lens.append(gen_len)
             if saved < save_cap:
                 tf.write(json.dumps({
                     "L": L, "iter": i + j, "answer": ans,
-                    "has_think_close": has_close, "truncated": truncated,
-                    "gen_len": gen_len,
+                    "forced": j in force_idx,
                     "ops": "".join(">" if o else "<" for o in ops_matrix[i + j]),
-                    "text": text,
+                    "text": texts[j],
                 }) + "\n")
                 saved += 1
         i += cn
         n57 = counts["5"] + counts["7"]
         p5 = counts["5"] / n57 if n57 else float("nan")
         print(f"  L={L:>4} {i}/{n_iters}  counts={counts}  P(5|5,7)={p5:.3f}  "
-              f"trunc={n_truncated}  mean_len={np.mean(gen_lens):.0f}", flush=True)
+              f"forced={n_forced}  mean_len={np.mean(gen_lens):.0f}", flush=True)
     n57 = counts["5"] + counts["7"]
     return {
-        "counts": counts,
-        "n_iters": n_iters,
+        "counts": counts, "n_iters": n_iters,
         "p_5_given_5_or_7": (counts["5"] / n57) if n57 else None,
-        "n_5_or_7": n57,
-        "n_truncated": n_truncated,
-        "n_no_think_close": n_no_close,
+        "n_5_or_7": n57, "n_forced": n_forced,
         "mean_gen_len": float(np.mean(gen_lens)),
         "max_gen_len": int(np.max(gen_lens)),
     }
@@ -130,10 +147,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--op-seed", type=int, default=None,
+                    help="override cfg op_seed (array tasks pass distinct seeds)")
+    ap.add_argument("--n-iters", type=int, default=None,
+                    help="override cfg n_iters (array tasks pass their share)")
     args = ap.parse_args()
 
     with open(args.config) as f:
         cfg = yaml.safe_load(f)
+    if args.op_seed is not None:
+        cfg["op_seed"] = args.op_seed
+    if args.n_iters is not None:
+        cfg["n_iters"] = args.n_iters
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -149,6 +174,7 @@ def main():
     enable_thinking = cfg.get("enable_thinking", True)
     n_iters = cfg["n_iters"]
     max_new_tokens = cfg["max_new_tokens"]
+    answer_budget = cfg.get("answer_budget", 16)
     chunk_size = cfg.get("sample_chunk_size", 16)
     gen_kwargs = cfg.get("gen", {"temperature": 0.6, "top_p": 0.95, "top_k": 20})
     preamble = cfg["preamble"]
@@ -173,9 +199,9 @@ def main():
         seen.add(L)
         print(f"=== L={L} ===", flush=True)
         summary = measure_L(model, tok, pairs_all[:L], L, n_iters, op_rng,
-                            gen_kwargs, max_new_tokens, chunk_size, preamble,
-                            question, enable_thinking, device, pad_id, eos_id,
-                            tf, save_cap)
+                            gen_kwargs, max_new_tokens, answer_budget, chunk_size,
+                            preamble, question, enable_thinking, device, pad_id,
+                            eos_id, tf, save_cap)
         results["results"][str(L)] = summary
     tf.close()
     with open(out_dir / "exp_reason_operator_results.json", "w") as f:
