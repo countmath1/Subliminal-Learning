@@ -1,14 +1,14 @@
-"""Thinking-mode operator-randomization on a single fixed list.
+"""Thinking-mode operator-randomization across list lengths.
 
-Like exp_operator_rand.py (fixed items, randomize only the `<`/`>` operators
-across iterations), but with Qwen3 thinking ENABLED. In thinking mode the
-answer is conditioned on a sampled reasoning trace, so there is no
-one-forward-pass logit: each iteration generates a full trace and we parse
-the committed 5-vs-7 answer from it. Every trace is saved for auditing
-(e.g. whether the reasoning references the preference list).
+For each L in L_values: freeze the first L animal pairs (items fixed), then
+run n_iters iterations. Each iteration draws a fresh random `<`/`>` vector,
+generates one Qwen3 reasoning trace (thinking ON), and parses the committed
+5-vs-7 answer. Aggregating the binary answers gives ONE proportion
+P(5 | {5,7}) per L (a point, with a binomial CI computed at plot time) --
+the thinking-mode analog of the logit L-sweep, minus the per-vector violin
+(which thinking mode can't produce without many samples per vector).
 
-One fixed item set (the whole pool, or the first L pairs); N iterations,
-each a fresh random operator vector + one sampled generation.
+Every trace is saved (capped per L) for auditing the reasoning.
 """
 import argparse
 import json
@@ -48,11 +48,6 @@ def encode(tok, prompt, enable_thinking):
 
 
 def parse_answer(text):
-    """Return (answer, has_think_close); answer in {'5','7','other'}.
-
-    1) strip <think>...</think>; 2) honor 'Final answer: N'; 3) else last
-    standalone 5 or 7 in the answer portion; 4) else 'other'.
-    """
     has_close = "</think>" in text
     portion = re.sub(r".*</think>", "", text, flags=re.DOTALL) if has_close else text
     m = re.search(r"final answer[:\s]*\**\s*(\d+)", portion, flags=re.IGNORECASE)
@@ -70,6 +65,65 @@ def left_pad(id_lists, pad_id):
     ids = [[pad_id] * (maxlen - len(x)) + x for x in id_lists]
     attn = [[0] * (maxlen - len(x)) + [1] * len(x) for x in id_lists]
     return ids, attn
+
+
+def measure_L(model, tok, pairs, L, n_iters, op_rng, gen_kwargs, max_new_tokens,
+              chunk_size, preamble, question, enable_thinking, device,
+              pad_id, eos_id, tf, save_cap):
+    counts = {"5": 0, "7": 0, "other": 0}
+    n_truncated = 0
+    n_no_close = 0
+    gen_lens = []
+    saved = 0
+    ops_matrix = op_rng.integers(0, 2, size=(n_iters, L))
+    i = 0
+    while i < n_iters:
+        cn = min(chunk_size, n_iters - i)
+        id_lists = [encode(tok, build_prompt(preamble, pairs, ops_matrix[i + j], question),
+                           enable_thinking) for j in range(cn)]
+        ids, attn = left_pad(id_lists, pad_id)
+        input_ids = torch.tensor(ids, device=device)
+        attention = torch.tensor(attn, device=device)
+        with torch.inference_mode():
+            out = model.generate(
+                input_ids, attention_mask=attention, do_sample=True,
+                max_new_tokens=max_new_tokens, pad_token_id=pad_id, **gen_kwargs)
+        new = out[:, input_ids.shape[1]:]
+        for j, row in enumerate(new):
+            eos_pos = (row == eos_id).nonzero()
+            truncated = len(eos_pos) == 0
+            gen_len = eos_pos[0].item() if len(eos_pos) else row.shape[0]
+            text = tok.decode(row, skip_special_tokens=True)
+            ans, has_close = parse_answer(text)
+            counts[ans] += 1
+            n_truncated += truncated
+            n_no_close += (not has_close)
+            gen_lens.append(gen_len)
+            if saved < save_cap:
+                tf.write(json.dumps({
+                    "L": L, "iter": i + j, "answer": ans,
+                    "has_think_close": has_close, "truncated": truncated,
+                    "gen_len": gen_len,
+                    "ops": "".join(">" if o else "<" for o in ops_matrix[i + j]),
+                    "text": text,
+                }) + "\n")
+                saved += 1
+        i += cn
+        n57 = counts["5"] + counts["7"]
+        p5 = counts["5"] / n57 if n57 else float("nan")
+        print(f"  L={L:>4} {i}/{n_iters}  counts={counts}  P(5|5,7)={p5:.3f}  "
+              f"trunc={n_truncated}  mean_len={np.mean(gen_lens):.0f}", flush=True)
+    n57 = counts["5"] + counts["7"]
+    return {
+        "counts": counts,
+        "n_iters": n_iters,
+        "p_5_given_5_or_7": (counts["5"] / n57) if n57 else None,
+        "n_5_or_7": n57,
+        "n_truncated": n_truncated,
+        "n_no_think_close": n_no_close,
+        "mean_gen_len": float(np.mean(gen_lens)),
+        "max_gen_len": int(np.max(gen_lens)),
+    }
 
 
 def main():
@@ -99,78 +153,34 @@ def main():
     gen_kwargs = cfg.get("gen", {"temperature": 0.6, "top_p": 0.95, "top_k": 20})
     preamble = cfg["preamble"]
     question = cfg["question"]
+    save_cap = cfg.get("trace_save_cap", 100)
 
     pairs_all = parse_pairs(cfg["list_file"])
-    L = min(cfg.get("L", len(pairs_all)), len(pairs_all))
-    pairs = pairs_all[:L]
-    print(f"{len(pairs_all)} pairs in pool; using L={L} (fixed items)", flush=True)
-
+    print(f"{len(pairs_all)} pairs in pool", flush=True)
     op_rng = np.random.default_rng(cfg["op_seed"])
-    ops_matrix = op_rng.integers(0, 2, size=(n_iters, L))
 
-    counts = {"5": 0, "7": 0, "other": 0}
-    n_truncated = 0
-    n_no_close = 0
-    gen_lens = []
-    trace_path = out_dir / "exp_reason_operator_traces.jsonl"
-    tf = open(trace_path, "w")
-
-    i = 0
-    while i < n_iters:
-        cn = min(chunk_size, n_iters - i)
-        id_lists = [encode(tok, build_prompt(preamble, pairs, ops_matrix[i + j], question),
-                           enable_thinking) for j in range(cn)]
-        ids, attn = left_pad(id_lists, pad_id)
-        input_ids = torch.tensor(ids, device=device)
-        attention = torch.tensor(attn, device=device)
-        with torch.inference_mode():
-            out = model.generate(
-                input_ids, attention_mask=attention, do_sample=True,
-                max_new_tokens=max_new_tokens, pad_token_id=pad_id, **gen_kwargs)
-        new = out[:, input_ids.shape[1]:]
-        for j, row in enumerate(new):
-            eos_pos = (row == eos_id).nonzero()
-            truncated = len(eos_pos) == 0
-            gen_len = eos_pos[0].item() if len(eos_pos) else row.shape[0]
-            text = tok.decode(row, skip_special_tokens=True)
-            ans, has_close = parse_answer(text)
-            counts[ans] += 1
-            n_truncated += truncated
-            n_no_close += (not has_close)
-            gen_lens.append(gen_len)
-            ops_str = "".join(">" if o else "<" for o in ops_matrix[i + j])
-            tf.write(json.dumps({
-                "iter": i + j, "answer": ans, "has_think_close": has_close,
-                "truncated": truncated, "gen_len": gen_len, "ops": ops_str,
-                "text": text,
-            }) + "\n")
-        i += cn
-        n57 = counts["5"] + counts["7"]
-        p5 = counts["5"] / n57 if n57 else float("nan")
-        print(f"  {i}/{n_iters}  counts={counts}  P(5|5,7)={p5:.3f}  "
-              f"trunc={n_truncated}  mean_len={np.mean(gen_lens):.0f}", flush=True)
-    tf.close()
-
-    n57 = counts["5"] + counts["7"]
     results = {
-        "model": cfg["model"],
-        "enable_thinking": enable_thinking,
-        "n_iters": n_iters,
-        "L": L,
-        "op_seed": cfg["op_seed"],
-        "max_new_tokens": max_new_tokens,
-        "gen": gen_kwargs,
-        "counts": counts,
-        "p_5_given_5_or_7": (counts["5"] / n57) if n57 else None,
-        "n_truncated": n_truncated,
-        "n_no_think_close": n_no_close,
-        "mean_gen_len": float(np.mean(gen_lens)),
-        "max_gen_len": int(np.max(gen_lens)),
+        "model": cfg["model"], "enable_thinking": enable_thinking,
+        "n_iters": n_iters, "op_seed": cfg["op_seed"],
+        "max_new_tokens": max_new_tokens, "gen": gen_kwargs, "results": {},
     }
+    tf = open(out_dir / "exp_reason_operator_traces.jsonl", "w")
+    seen = set()
+    for L_req in cfg["L_values"]:
+        L = min(L_req, len(pairs_all))
+        if L in seen:
+            continue
+        seen.add(L)
+        print(f"=== L={L} ===", flush=True)
+        summary = measure_L(model, tok, pairs_all[:L], L, n_iters, op_rng,
+                            gen_kwargs, max_new_tokens, chunk_size, preamble,
+                            question, enable_thinking, device, pad_id, eos_id,
+                            tf, save_cap)
+        results["results"][str(L)] = summary
+    tf.close()
     with open(out_dir / "exp_reason_operator_results.json", "w") as f:
         json.dump(results, f, indent=2)
-    print(f"Wrote {out_dir / 'exp_reason_operator_results.json'} and {trace_path}",
-          flush=True)
+    print(f"Wrote {out_dir / 'exp_reason_operator_results.json'}", flush=True)
 
 
 if __name__ == "__main__":
