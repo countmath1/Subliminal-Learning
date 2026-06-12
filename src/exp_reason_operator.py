@@ -71,6 +71,8 @@ def measure_L(model, tok, pairs, L, n_iters, op_rng, gen_kwargs, max_new_tokens,
               answer_budget, chunk_size, preamble, question, enable_thinking,
               device, pad_id, eos_id, tf, save_cap):
     counts = {"5": 0, "7": 0, "other": 0}
+    counts_natural = {"5": 0, "7": 0, "other": 0}   # traces that closed </think> on their own
+    counts_forced = {"5": 0, "7": 0, "other": 0}    # traces force-committed at the budget
     n_forced = 0
     gen_lens = []
     saved = 0
@@ -117,9 +119,11 @@ def measure_L(model, tok, pairs, L, n_iters, op_rng, gen_kwargs, max_new_tokens,
             for k, j in enumerate(force_idx):
                 texts[j] = "</think>\n\nFinal answer:" + tok.decode(
                     fnew[k], skip_special_tokens=True)
+        forced_set = set(force_idx)
         for j in range(cn):
             ans, _ = parse_answer(texts[j])
             counts[ans] += 1
+            (counts_forced if j in forced_set else counts_natural)[ans] += 1
             if saved < save_cap:
                 tf.write(json.dumps({
                     "L": L, "iter": i + j, "answer": ans,
@@ -135,7 +139,10 @@ def measure_L(model, tok, pairs, L, n_iters, op_rng, gen_kwargs, max_new_tokens,
               f"forced={n_forced}  mean_len={np.mean(gen_lens):.0f}", flush=True)
     n57 = counts["5"] + counts["7"]
     return {
-        "counts": counts, "n_iters": n_iters,
+        "counts": counts,
+        "counts_natural": counts_natural,
+        "counts_forced": counts_forced,
+        "n_iters": n_iters,
         "p_5_given_5_or_7": (counts["5"] / n57) if n57 else None,
         "n_5_or_7": n57, "n_forced": n_forced,
         "mean_gen_len": float(np.mean(gen_lens)),

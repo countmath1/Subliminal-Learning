@@ -41,19 +41,32 @@ def main():
         r = json.load(f)
 
     Ls = sorted(int(k) for k in r["results"].keys())
-    p, lo, hi = [], [], []
-    for L in Ls:
-        res = r["results"][str(L)]
-        k = res["counts"]["5"]
-        n = res["counts"]["5"] + res["counts"]["7"]
-        pp, l, h = wilson(k, n)
-        p.append(pp)
-        lo.append(pp - l)
-        hi.append(h - pp)
+
+    def series(count_key):
+        xs, p, lo, hi = [], [], [], []
+        for L in Ls:
+            c = r["results"][str(L)].get(count_key)
+            if not c:
+                continue
+            n = c["5"] + c["7"]
+            if n == 0:
+                continue
+            pp, l, h = wilson(c["5"], n)
+            xs.append(L); p.append(pp); lo.append(pp - l); hi.append(h - pp)
+        return xs, p, lo, hi
 
     fig, ax = plt.subplots(figsize=(7.5, 4.5))
-    ax.errorbar(Ls, p, yerr=[lo, hi], marker="o", capsize=3, color="C0",
-                label="thinking (Qwen3-8B)")
+    # All traces, then the two splits: fully-reasoned (natural) is the clean
+    # measurement; forced exposes any bias from cutting reasoning at the budget.
+    for key, color, label in [
+        ("counts", "C0", "thinking — all"),
+        ("counts_natural", "C2", "thinking — fully reasoned"),
+        ("counts_forced", "C4", "thinking — forced"),
+    ]:
+        xs, p, lo, hi = series(key)
+        if xs:
+            ax.errorbar(xs, p, yerr=[lo, hi], marker="o", capsize=3, color=color,
+                        label=label, alpha=0.9 if key != "counts_forced" else 0.5)
 
     if args.logit:
         with open(args.logit) as f:
