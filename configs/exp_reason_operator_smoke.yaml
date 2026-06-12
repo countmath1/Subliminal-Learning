@@ -1,11 +1,11 @@
 model: Qwen/Qwen3-8B
 enable_thinking: true
 n_iters: 8
-L_values: [2, 50, 250]   # short, mid, long -> spans the per-gen cost range
+L_values: [50, 250, 500]   # the truncation-prone large-L end
 list_file: data/preference_lists/animals_500.txt
 op_seed: 0
-max_new_tokens: 2048
-sample_chunk_size: 8
+max_new_tokens: 4096       # was 2048; testing whether traces finish with more room
+sample_chunk_size: 4       # 4096-token gen x larger batch is memory-heavy; keep small
 trace_save_cap: 100
 gen:
   temperature: 0.6
